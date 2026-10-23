@@ -105,12 +105,14 @@ struct RootView: View {
             switch phase {
             case .active:
                 if model.isRiding {
+                    UIApplication.shared.isIdleTimerDisabled = true
                     Task {
                         await model.resumeRideUpdates(settings: settings)
                     }
                 }
             case .background:
                 model.pauseRideUpdates()
+                UIApplication.shared.isIdleTimerDisabled = false
             case .inactive:
                 break
             @unknown default:
@@ -276,7 +278,7 @@ struct RootView: View {
 
     private func dismissSplash() async {
         guard isShowingSplash else { return }
-        let delay: UInt64 = reduceMotion ? 900_000_000 : 1_950_000_000
+        let delay: UInt64 = reduceMotion ? 900_000_000 : 1_600_000_000
         try? await Task.sleep(nanoseconds: delay)
         guard !Task.isCancelled else { return }
         withAnimation(.easeOut(duration: reduceMotion ? 0.15 : 0.35)) {

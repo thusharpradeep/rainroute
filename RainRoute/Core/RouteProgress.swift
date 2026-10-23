@@ -26,8 +26,8 @@ enum RouteProgressTracker {
             let start = route.coordinates[index]
             let end = route.coordinates[index + 1]
             let midpointLatitude = (start.latitude + end.latitude) / 2 * .pi / 180
-            let metersPerDegreeLongitude = 111_320 * cos(midpointLatitude)
-            let metersPerDegreeLatitude = 110_540
+            let metersPerDegreeLongitude: Double = 111_320 * cos(midpointLatitude)
+            let metersPerDegreeLatitude: Double = 110_540
 
             let edgeX = (end.longitude - start.longitude) * metersPerDegreeLongitude
             let edgeY = (end.latitude - start.latitude) * metersPerDegreeLatitude

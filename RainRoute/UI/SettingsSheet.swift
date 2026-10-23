@@ -178,7 +178,7 @@ struct SettingsSheet: View {
     private var version: String {
         let short = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleShortVersionString"
-        ) as? String ?? "1.0"
+        ) as? String ?? "1.1"
         let build = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleVersion"
         ) as? String ?? "1"

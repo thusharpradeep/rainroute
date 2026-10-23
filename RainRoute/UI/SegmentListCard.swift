@@ -42,7 +42,7 @@ struct SegmentListCard: View {
                 } else {
                     TimelineView(
                         .animation(
-                            minimumInterval: 1.0 / 12.0,
+                            minimumInterval: 1.0 / 15.0,
                             paused: reduceMotion || !hasWetSegment
                         )
                     ) { timeline in
