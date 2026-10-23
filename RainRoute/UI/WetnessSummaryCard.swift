@@ -63,7 +63,7 @@ struct WetnessSummaryCard: View {
                     )
                     InlineMetric(
                         icon: "arrow.down.left",
-                        label: "ETA",
+                        label: isLive ? "ETA" : "Arrive",
                         value: result.arrival.formatted(.dateTime.hour().minute())
                     )
                 }
