@@ -75,6 +75,43 @@ struct SettingsSheet: View {
                 }
 
                 Section {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("Segments")
+                            Spacer()
+                            Text("\(settings.segmentCount)")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(
+                            value: Binding(
+                                get: { Double(settings.segmentCount) },
+                                set: { settings.setSegmentCount(Int($0.rounded())) }
+                            ),
+                            in: Double(AppSettings.segmentRange.lowerBound)...Double(AppSettings.segmentRange.upperBound),
+                            step: 1
+                        )
+                        .tint(Theme.accent)
+                        HStack {
+                            Text("\(AppSettings.segmentRange.lowerBound)")
+                            Spacer()
+                            Button("Maximum (\(AppSettings.segmentRange.upperBound))") {
+                                settings.setSegmentCount(AppSettings.segmentRange.upperBound)
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Theme.accent)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Route sampling")
+                } footer: {
+                    Text("12 segments is the default. More segments refine the distance and ETA detail, but forecasts are only about 9 km wide, so extra segments cannot add weather precision.")
+                }
+
+                Section {
                     Link(destination: URL(string: "https://open-meteo.com/")!) {
                         HStack {
                             Label("Open-Meteo", systemImage: "cloud.sun")

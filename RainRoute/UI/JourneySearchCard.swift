@@ -3,6 +3,7 @@ import SwiftUI
 struct JourneySearchCard: View {
     @ObservedObject var model: AppModel
     @ObservedObject var settings: AppSettings
+    let onImport: () -> Void
     @FocusState private var focusedField: AppModel.Field?
 
     var body: some View {
@@ -23,6 +24,7 @@ struct JourneySearchCard: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Swap start and destination")
+                    .disabled(model.isRiding)
                 }
 
                 VStack(spacing: 10) {
@@ -41,6 +43,7 @@ struct JourneySearchCard: View {
                         tint: Theme.heavyRain
                     )
                 }
+                .disabled(model.isRiding)
 
                 if model.isShowingSuggestions {
                     suggestionsList
@@ -74,6 +77,24 @@ struct JourneySearchCard: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(!model.canCheck)
+
+                Button(action: onImport) {
+                    Label("Import from Google Maps", systemImage: "square.and.arrow.down")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 11)
+                        .foregroundStyle(Theme.accent)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Theme.accent.opacity(0.35), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(model.isLoading || model.isImporting || model.isRiding)
+
+                if model.routeSource == .googleMaps {
+                    importedRouteBanner
+                }
 
                 if model.isLoading, let status = model.statusMessage {
                     Text(status)
@@ -157,6 +178,45 @@ struct JourneySearchCard: View {
                     lineWidth: 1.5
                 )
         )
+    }
+
+    private var importedRouteBanner: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.caption)
+                .foregroundStyle(Theme.safe)
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(importedRouteText)
+                    .font(.caption.weight(.semibold))
+                Button("Use OSRM's default route") {
+                    Task {
+                        await model.clearImportedRoute(settings: settings)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(Theme.accent)
+                .disabled(model.isLoading || model.isRiding)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            Theme.safe.opacity(0.09),
+            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+        )
+        .accessibilityElement(children: .combine)
+    }
+
+    private var importedRouteText: String {
+        let count = model.importedStops.count
+        if count == 0 {
+            return "Imported from Google Maps"
+        }
+        return "Imported from Google Maps · \(count) \(count == 1 ? "stop" : "stops")"
     }
 
     private var suggestionsList: some View {

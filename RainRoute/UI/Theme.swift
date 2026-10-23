@@ -7,6 +7,7 @@ enum Theme {
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
     static let elevated = Color(uiColor: .systemBackground)
     static let hairline = Color(uiColor: .separator)
+    static let launchBackground = Color(red: 0.03, green: 0.09, blue: 0.16)
 
     static let dry = Color(red: 0.44, green: 0.50, blue: 0.58)
     static let lightRain = Color(red: 0.20, green: 0.70, blue: 0.92)

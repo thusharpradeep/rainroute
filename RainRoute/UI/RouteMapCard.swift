@@ -6,13 +6,19 @@ struct RouteMapCard: View {
     let route: Route
     let result: WetnessResult
     @Binding var cameraPosition: MapCameraPosition
+    var liveSnapshot: LiveRideSnapshot?
+    var routeSource: RouteSource = .typed
+    var isRiding = false
 
     var body: some View {
         CardContainer {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Label("Rain along the route", systemImage: "map")
-                        .font(.headline)
+                    Label(
+                        isRiding ? "Rain on the remaining route" : "Rain along the route",
+                        systemImage: "map"
+                    )
+                    .font(.headline)
                     Spacer()
                     Text("\(Int(result.roundedWetPercent))% wet")
                         .font(.caption.weight(.semibold))
@@ -21,7 +27,10 @@ struct RouteMapCard: View {
 
                 Map(position: $cameraPosition) {
                     MapPolyline(coordinates: route.coordinates.map(\.mapCoordinate))
-                        .stroke(Color.white.opacity(0.92), lineWidth: 10)
+                        .stroke(
+                            isRiding ? Color.gray.opacity(0.38) : Color.white.opacity(0.92),
+                            lineWidth: isRiding ? 7 : 10
+                        )
 
                     ForEach(result.segments) { assessment in
                         MapPolyline(
@@ -30,7 +39,7 @@ struct RouteMapCard: View {
                         .stroke(assessment.intensity.color, lineWidth: 6)
                     }
 
-                    if let start = route.coordinates.first {
+                    if !isRiding, let start = route.coordinates.first {
                         Annotation("Start", coordinate: start.mapCoordinate) {
                             mapMarker(color: Theme.accent)
                         }
@@ -39,6 +48,12 @@ struct RouteMapCard: View {
                     if let destination = route.coordinates.last {
                         Annotation("Destination", coordinate: destination.mapCoordinate) {
                             mapMarker(color: Theme.heavyRain)
+                        }
+                    }
+
+                    if let liveSnapshot {
+                        Annotation("You", coordinate: liveSnapshot.location.mapCoordinate) {
+                            currentLocationMarker
                         }
                     }
                 }
@@ -53,24 +68,39 @@ struct RouteMapCard: View {
                     legend
                         .padding(10)
                 }
+                .overlay(alignment: .bottomTrailing) {
+                    if let liveSnapshot {
+                        recenterButton(to: liveSnapshot.location)
+                            .padding(10)
+                    }
+                }
                 .onAppear {
                     cameraPosition = .region(route.boundingRegion)
                 }
 
-                Text("Colours show the hourly rain rate forecast at each segment's ETA. Grey means below your wet threshold.")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                Text(
+                    isRiding
+                        ? "The grey line is your planned route. Colours show the forecast for the segments still ahead."
+                        : "Colours show the hourly rain rate forecast at each segment's ETA. Grey means below your wet threshold."
+                )
+                .font(.caption2)
+                .foregroundStyle(.secondary)
             }
         }
     }
 
     private var routePill: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(distanceText)
+            Text(isRiding ? "\(distanceText) left" : distanceText)
                 .font(.caption.weight(.semibold))
-            Text(durationText)
+            Text(isRiding ? "\(durationText) left" : durationText)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+            if routeSource == .googleMaps {
+                Text(isRiding ? "Imported, live" : "Imported route")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+            }
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
@@ -104,6 +134,38 @@ struct RouteMapCard: View {
                 .fill(color)
                 .frame(width: 16, height: 16)
         }
+    }
+
+    private var currentLocationMarker: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 28, height: 28)
+                .shadow(color: .black.opacity(0.22), radius: 4, x: 0, y: 1)
+            Circle()
+                .fill(Color.blue)
+                .frame(width: 18, height: 18)
+        }
+        .accessibilityLabel("Your current location")
+    }
+
+    private func recenterButton(to coordinate: GeoCoordinate) -> some View {
+        Button {
+            cameraPosition = .region(
+                MKCoordinateRegion(
+                    center: coordinate.mapCoordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.03, longitudeDelta: 0.03)
+                )
+            )
+        } label: {
+            Image(systemName: "location.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 32, height: 32)
+                .background(.regularMaterial, in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Recentre on my location")
     }
 
     private var distanceText: String {

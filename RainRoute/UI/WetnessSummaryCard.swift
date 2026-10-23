@@ -3,6 +3,7 @@ import SwiftUI
 
 struct WetnessSummaryCard: View {
     let result: WetnessResult
+    var isLive = false
 
     var body: some View {
         CardContainer {
@@ -17,7 +18,7 @@ struct WetnessSummaryCard: View {
                                 .font(.system(size: 26, weight: .semibold, design: .rounded))
                                 .foregroundStyle(.secondary)
                         }
-                        Text("of the ride likely wet")
+                        Text(isLive ? "of the remaining ride likely wet" : "of the ride likely wet")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -35,20 +36,21 @@ struct WetnessSummaryCard: View {
                         .foregroundStyle(Theme.riskColor(for: result.roundedWetPercent))
                 }
 
-                Text("Rain likely on \(result.wetSegmentCount) of \(result.totalSegments) segments.")
+                Text(result.wetSegmentSummary)
                     .font(.headline)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Divider()
 
                 HStack(spacing: 14) {
                     InlineMetric(
                         icon: "ruler",
-                        label: "Route",
+                        label: isLive ? "To go" : "Route",
                         value: distanceText
                     )
                     InlineMetric(
                         icon: "clock",
-                        label: "Ride",
+                        label: isLive ? "Ride left" : "Ride",
                         value: durationText
                     )
                 }
@@ -56,12 +58,14 @@ struct WetnessSummaryCard: View {
                 HStack(spacing: 14) {
                     InlineMetric(
                         icon: "arrow.up.right",
-                        label: "Leave",
-                        value: result.departure.formatted(.dateTime.hour().minute())
+                        label: isLive ? "Now" : "Leave",
+                        value: isLive
+                            ? Date().formatted(.dateTime.hour().minute())
+                            : result.departure.formatted(.dateTime.hour().minute())
                     )
                     InlineMetric(
                         icon: "arrow.down.left",
-                        label: "Arrive",
+                        label: "ETA",
                         value: result.arrival.formatted(.dateTime.hour().minute())
                     )
                 }
