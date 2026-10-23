@@ -110,7 +110,7 @@ final class RouteSlicerTests: XCTestCase {
             GridCell(latitudeTenths: -110, longitudeTenths: -759)
         )
 
-        let route = TestSupport.simpleRoute(totalMeters: 120_000, durationSeconds: 7_200)
+        let route = TestSupport.tirurKochiRoute()
         let cells = try RouteSlicer.gridCells(route: route)
         XCTAssertEqual(cells.count, Set(cells).count)
         XCTAssertFalse(cells.isEmpty)
@@ -118,6 +118,7 @@ final class RouteSlicerTests: XCTestCase {
         let three = try RouteSlicer.gridCells(route: route, segmentCount: 3)
         XCTAssertEqual(three.count, 3)
         let sixty = try RouteSlicer.gridCells(route: route, segmentCount: 60)
+        XCTAssertGreaterThan(sixty.count, 3)
         XCTAssertLessThan(sixty.count, 60)
         XCTAssertEqual(sixty.count, Set(sixty).count)
     }
