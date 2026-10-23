@@ -37,7 +37,7 @@ struct BestDepartureCard: View {
                         Text("Leaving now is as good as it gets")
                             .font(.headline)
                         if plan.now.wetSegmentCount == 0 {
-                            Text("The route looks dry at every departure in the next four hours.")
+                            Text("The route looks dry if you leave now.")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)

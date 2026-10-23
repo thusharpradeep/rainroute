@@ -177,6 +177,6 @@ struct OSRMRoute: Decodable {
     struct Step: Decodable {
         let distance: Double
         let duration: Double
-        let geometry: Geometry?
+        let geometry: OSRMRoute.Geometry?
     }
 }

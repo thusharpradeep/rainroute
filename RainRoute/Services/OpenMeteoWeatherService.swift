@@ -7,7 +7,7 @@ protocol WeatherForecastProviding: Sendable {
     ) async throws -> [GridCell: HourlyForecast]
 }
 
-struct OpenMeteoWeatherService: WeatherForecastProviding, Sendable {
+struct OpenMeteoWeatherService: WeatherForecastProviding {
     var baseURL: URL = URL(string: "https://api.open-meteo.com/v1/forecast")!
     var session: URLSession = .shared
 
