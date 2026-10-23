@@ -47,13 +47,54 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate --spec project.yml
 
+      - name: Select an available iPhone simulator
+        run: |
+          set -euo pipefail
+          udid=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime in sorted(data.get("devices", {}), reverse=True):
+              if "iOS" not in runtime:
+                  continue
+              for device in data["devices"][runtime]:
+                  if device.get("isAvailable") and "iPhone" in device.get("name", ""):
+                      print(device["udid"])
+                      raise SystemExit
+          ')
+          if [ -z "$udid" ]; then
+            runtime=$(xcrun simctl list runtimes --json | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          candidates = [
+              runtime for runtime in data.get("runtimes", [])
+              if runtime.get("isAvailable") and runtime.get("platform") == "iOS"
+          ]
+          if not candidates:
+              raise SystemExit("No iOS simulator runtime is installed.")
+          candidates.sort(key=lambda runtime: [int(part) for part in runtime["version"].split(".")])
+          print(candidates[-1]["identifier"])
+          ')
+            device_type=$(xcrun simctl list devicetypes --json | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          for device_type in data.get("devicetypes", []):
+              if "iPhone" in device_type.get("name", ""):
+                  print(device_type["identifier"])
+                  raise SystemExit
+          raise SystemExit("No iPhone simulator device type is installed.")
+          ')
+            udid=$(xcrun simctl create "RainRoute Test iPhone" "$device_type" "$runtime")
+          fi
+          echo "SIMULATOR_UDID=$udid" >> "$GITHUB_ENV"
+          echo "Using simulator $udid"
+
       - name: Run unit tests
         run: |
           set -euo pipefail
           xcodebuild test \
             -project RainRoute.xcodeproj \
             -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 16 Pro Max,OS=latest" \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
             -derivedDataPath build-tests \
             -only-testing:RainRouteTests \
             CODE_SIGNING_ALLOWED=NO \
