@@ -182,7 +182,10 @@ final class AppModel: ObservableObject {
             )
 
             statusMessage = "Fetching hourly forecasts…"
-            let cells = try RouteSlicer.gridCells(route: route)
+            let cells = try RouteSlicer.gridCells(
+                route: route,
+                segmentCount: settings.segmentCount
+            )
             let now = Date()
             let forecasts = try await weatherRepository.forecasts(
                 for: cells,
@@ -222,14 +225,16 @@ final class AppModel: ObservableObject {
                 departure: departure,
                 paceFactor: settings.paceFactor,
                 threshold: settings.wetThreshold,
-                forecasts: forecasts
+                forecasts: forecasts,
+                segmentCount: settings.segmentCount
             )
             let plan = try DeparturePlanner.plan(
                 route: route,
                 now: referenceNow,
                 paceFactor: settings.paceFactor,
                 threshold: settings.wetThreshold,
-                forecasts: forecasts
+                forecasts: forecasts,
+                segmentCount: settings.segmentCount
             )
             self.result = result
             self.plan = plan

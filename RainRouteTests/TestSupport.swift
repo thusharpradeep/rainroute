@@ -68,17 +68,19 @@ enum TestSupport {
 
     static func uniformForecasts(
         route: Route,
-        forecast: HourlyForecast
+        forecast: HourlyForecast,
+        segmentCount: Int = RouteSlicer.defaultSegmentCount
     ) throws -> [GridCell: HourlyForecast] {
-        let cells = try RouteSlicer.gridCells(route: route)
+        let cells = try RouteSlicer.gridCells(route: route, segmentCount: segmentCount)
         return Dictionary(uniqueKeysWithValues: cells.map { ($0, forecast) })
     }
 
     static func forecasts(
         route: Route,
+        segmentCount: Int = RouteSlicer.defaultSegmentCount,
         make: (Int, GridCell) -> HourlyForecast
     ) throws -> [GridCell: HourlyForecast] {
-        let cells = try RouteSlicer.gridCells(route: route)
+        let cells = try RouteSlicer.gridCells(route: route, segmentCount: segmentCount)
         var result: [GridCell: HourlyForecast] = [:]
         for (index, cell) in cells.enumerated() {
             result[cell] = make(index, cell)

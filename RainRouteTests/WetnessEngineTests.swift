@@ -16,13 +16,18 @@ final class WetnessEngineTests: XCTestCase {
                 (0.0, 0.1)
             ]
         )
-        let forecasts = try TestSupport.uniformForecasts(route: route, forecast: forecast)
+        let forecasts = try TestSupport.uniformForecasts(
+            route: route,
+            forecast: forecast,
+            segmentCount: 13
+        )
         let result = try WetnessEngine.evaluate(
             route: route,
             departure: TestSupport.date(hour: 10),
             paceFactor: 1.0,
             threshold: 0.2,
-            forecasts: forecasts
+            forecasts: forecasts,
+            segmentCount: 13
         )
 
         XCTAssertEqual(result.totalSegments, 13)
@@ -39,7 +44,7 @@ final class WetnessEngineTests: XCTestCase {
 
     func testThresholdEqualityAndIntensityClassification() throws {
         let route = TestSupport.simpleRoute(totalMeters: 30_000, durationSeconds: 3_600)
-        let cells = try RouteSlicer.gridCells(route: route)
+        let cells = try RouteSlicer.gridCells(route: route, segmentCount: 3)
         XCTAssertEqual(cells.count, 3)
 
         let forecasts: [GridCell: HourlyForecast] = [
@@ -53,7 +58,8 @@ final class WetnessEngineTests: XCTestCase {
             departure: TestSupport.date(hour: 10),
             paceFactor: 1.0,
             threshold: 0.2,
-            forecasts: forecasts
+            forecasts: forecasts,
+            segmentCount: 3
         )
 
         XCTAssertEqual(result.wetSegmentCount, 2)

@@ -22,7 +22,11 @@ final class DeparturePlannerTests: XCTestCase {
                 (0.0, 0.1)
             ]
         )
-        let forecasts = try TestSupport.uniformForecasts(route: route, forecast: forecast)
+        let forecasts = try TestSupport.uniformForecasts(
+            route: route,
+            forecast: forecast,
+            segmentCount: 13
+        )
         let now = TestSupport.date(hour: 10)
 
         let plan = try DeparturePlanner.plan(
@@ -30,7 +34,8 @@ final class DeparturePlannerTests: XCTestCase {
             now: now,
             paceFactor: 1.0,
             threshold: 0.2,
-            forecasts: forecasts
+            forecasts: forecasts,
+            segmentCount: 13
         )
 
         XCTAssertTrue(plan.shouldWait)
@@ -45,7 +50,8 @@ final class DeparturePlannerTests: XCTestCase {
             departure: plan.bestDeparture,
             paceFactor: 1.0,
             threshold: 0.2,
-            forecasts: forecasts
+            forecasts: forecasts,
+            segmentCount: 13
         )
         XCTAssertEqual(plan.best, direct)
     }
@@ -101,9 +107,9 @@ final class DeparturePlannerTests: XCTestCase {
         )
 
         XCTAssertTrue(plan.shouldWait)
-        XCTAssertEqual(plan.now.wetSegmentCount, 3)
+        XCTAssertEqual(plan.now.wetSegmentCount, 12)
         XCTAssertEqual(plan.best.wetSegmentCount, 0)
-        XCTAssertEqual(plan.segmentsSaved, 3)
+        XCTAssertEqual(plan.segmentsSaved, 12)
         XCTAssertEqual(plan.bestDeparture, TestSupport.date(hour: 12))
         XCTAssertEqual(plan.best.probabilityWeightedShare ?? -1, 0.2, accuracy: 0.0001)
     }

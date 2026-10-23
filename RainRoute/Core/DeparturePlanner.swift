@@ -18,6 +18,7 @@ enum DeparturePlanner {
         paceFactor: Double,
         threshold: Double,
         forecasts: [GridCell: HourlyForecast],
+        segmentCount: Int = RouteSlicer.defaultSegmentCount,
         window: TimeInterval = DeparturePlanner.searchWindow,
         step: TimeInterval = DeparturePlanner.step
     ) throws -> DeparturePlan {
@@ -30,7 +31,8 @@ enum DeparturePlanner {
             departure: now,
             paceFactor: paceFactor,
             threshold: threshold,
-            forecasts: forecasts
+            forecasts: forecasts,
+            segmentCount: segmentCount
         )
 
         var candidates: [(departure: Date, result: WetnessResult)] = [
@@ -45,7 +47,8 @@ enum DeparturePlanner {
                 departure: departure,
                 paceFactor: paceFactor,
                 threshold: threshold,
-                forecasts: forecasts
+                forecasts: forecasts,
+                segmentCount: segmentCount
             ) {
                 candidates.append((departure, result))
             }

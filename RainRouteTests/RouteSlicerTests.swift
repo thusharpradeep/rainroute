@@ -2,12 +2,28 @@ import XCTest
 @testable import RainRoute
 
 final class RouteSlicerTests: XCTestCase {
-    func testSegmentCountTargetsTenKilometreSamplesWithClamps() {
-        XCTAssertEqual(RouteSlicer.segmentCount(for: TestSupport.simpleRoute(totalMeters: 5_000)), 3)
-        XCTAssertEqual(RouteSlicer.segmentCount(for: TestSupport.simpleRoute(totalMeters: 30_000)), 3)
-        XCTAssertEqual(RouteSlicer.segmentCount(for: TestSupport.simpleRoute(totalMeters: 120_000)), 12)
-        XCTAssertEqual(RouteSlicer.segmentCount(for: TestSupport.simpleRoute(totalMeters: 300_000)), 30)
-        XCTAssertEqual(RouteSlicer.segmentCount(for: TestSupport.simpleRoute(totalMeters: 500_000)), 30)
+    func testSegmentCountDefaultsAndClampsToTheSupportedRange() {
+        XCTAssertEqual(RouteSlicer.defaultSegmentCount, 12)
+        XCTAssertEqual(RouteSlicer.clampedSegmentCount(-1), 3)
+        XCTAssertEqual(RouteSlicer.clampedSegmentCount(3), 3)
+        XCTAssertEqual(RouteSlicer.clampedSegmentCount(12), 12)
+        XCTAssertEqual(RouteSlicer.clampedSegmentCount(60), 60)
+        XCTAssertEqual(RouteSlicer.clampedSegmentCount(999), 60)
+    }
+
+    func testCustomSegmentCountProducesEqualLengthsAndEtas() throws {
+        let route = TestSupport.simpleRoute(totalMeters: 60_000, durationSeconds: 3_600)
+        let segments = try RouteSlicer.segments(
+            route: route,
+            departure: TestSupport.date(hour: 10),
+            paceFactor: 1.0,
+            segmentCount: 6
+        )
+
+        XCTAssertEqual(segments.count, 6)
+        XCTAssertEqual(segments[0].lengthMeters, 10_000, accuracy: 0.001)
+        XCTAssertEqual(segments[0].travelTimeToMidpoint, 300, accuracy: 0.001)
+        XCTAssertEqual(segments[5].endDistanceMeters, 60_000, accuracy: 0.001)
     }
 
     func testTwelveSegmentsHaveEqualLengthsAndMidpointEtas() throws {
@@ -98,6 +114,12 @@ final class RouteSlicerTests: XCTestCase {
         let cells = try RouteSlicer.gridCells(route: route)
         XCTAssertEqual(cells.count, Set(cells).count)
         XCTAssertFalse(cells.isEmpty)
+
+        let three = try RouteSlicer.gridCells(route: route, segmentCount: 3)
+        XCTAssertEqual(three.count, 3)
+        let sixty = try RouteSlicer.gridCells(route: route, segmentCount: 60)
+        XCTAssertLessThan(sixty.count, 60)
+        XCTAssertEqual(sixty.count, Set(sixty).count)
     }
 
     func testInvalidRouteThrows() {

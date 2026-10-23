@@ -70,7 +70,8 @@ enum WetnessEngine {
         departure: Date,
         paceFactor: Double,
         threshold: Double,
-        forecasts: [GridCell: HourlyForecast]
+        forecasts: [GridCell: HourlyForecast],
+        segmentCount: Int = RouteSlicer.defaultSegmentCount
     ) throws -> WetnessResult {
         guard threshold.isFinite, threshold > 0 else {
             throw WetnessError.invalidThreshold
@@ -79,7 +80,8 @@ enum WetnessEngine {
         let segments = try RouteSlicer.segments(
             route: route,
             departure: departure,
-            paceFactor: paceFactor
+            paceFactor: paceFactor,
+            segmentCount: segmentCount
         )
 
         var assessments: [SegmentAssessment] = []

@@ -36,29 +36,26 @@ struct RouteSegment: Identifiable, Equatable, Sendable {
 }
 
 enum RouteSlicer {
-    static let preferredSegmentLengthMeters = 10_000.0
+    static let defaultSegmentCount = 12
     static let minimumSegments = 3
-    static let maximumSegments = 30
+    static let maximumSegments = 60
 
-    static func segmentCount(for route: Route) -> Int {
-        guard route.totalDistanceMeters.isFinite, route.totalDistanceMeters > 0 else {
-            return minimumSegments
-        }
-        let raw = (route.totalDistanceMeters / preferredSegmentLengthMeters).rounded()
-        return max(minimumSegments, min(maximumSegments, Int(raw)))
+    static func clampedSegmentCount(_ requested: Int) -> Int {
+        min(max(requested, minimumSegments), maximumSegments)
     }
 
     static func segments(
         route: Route,
         departure: Date,
-        paceFactor: Double
+        paceFactor: Double,
+        segmentCount: Int = defaultSegmentCount
     ) throws -> [RouteSegment] {
         try validate(route)
         guard paceFactor.isFinite else {
             throw RouteError.invalidPaceFactor
         }
         let pace = min(max(paceFactor, 0.8), 1.5)
-        let count = segmentCount(for: route)
+        let count = clampedSegmentCount(segmentCount)
         let totalDistance = route.totalDistanceMeters
 
         return (0..<count).map { index in
@@ -86,9 +83,12 @@ enum RouteSlicer {
     }
 
     /// Unique snapped cells for every segment midpoint, in first-seen route order.
-    static func gridCells(route: Route) throws -> [GridCell] {
+    static func gridCells(
+        route: Route,
+        segmentCount: Int = defaultSegmentCount
+    ) throws -> [GridCell] {
         try validate(route)
-        let count = segmentCount(for: route)
+        let count = clampedSegmentCount(segmentCount)
         let totalDistance = route.totalDistanceMeters
         var seen = Set<GridCell>()
         var cells: [GridCell] = []
