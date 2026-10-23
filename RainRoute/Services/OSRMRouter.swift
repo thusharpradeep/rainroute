@@ -137,13 +137,13 @@ struct OSRMRouter: Sendable {
         // per-segment ETAs stay consistent with the route summary.
         let distanceScale = route.distance / distanceTotal
         let durationScale = route.duration / durationTotal
-        let distances = cumulativeDistances.map { $0 * distanceScale }
-        let durations = cumulativeDurations.map { $0 * durationScale }
+        let normalizedDistances = cumulativeDistances.map { $0 * distanceScale }
+        let normalizedDurations = cumulativeDurations.map { $0 * durationScale }
 
         return Route(
             coordinates: coordinates,
-            cumulativeDistances: distances,
-            cumulativeDurations: durations
+            cumulativeDistances: normalizedDistances,
+            cumulativeDurations: normalizedDurations
         )
     }
 }

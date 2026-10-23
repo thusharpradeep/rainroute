@@ -1,3 +1,4 @@
+import Foundation
 import MapKit
 import SwiftUI
 
@@ -28,6 +29,21 @@ struct RootView: View {
             .background(Theme.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if model.hasResult {
+                        Button {
+                            Task {
+                                await model.refresh(settings: settings)
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.body.weight(.semibold))
+                        }
+                        .disabled(model.isLoading)
+                        .accessibilityLabel("Refresh the forecast")
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isShowingSettings = true

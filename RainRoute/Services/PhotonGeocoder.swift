@@ -126,16 +126,13 @@ struct PhotonGeocoder: Sendable {
     private static func joinedStreet(_ properties: PhotonFeature.Properties) -> String? {
         let street = firstNonEmpty(properties.street)
         let number = firstNonEmpty(properties.housenumber)
-        switch (number, street) {
-        case let (number?, street?):
+        if let number = number, let street = street {
             return "\(number) \(street)"
-        case let (nil, street?):
-            return street
-        case let (number?, nil):
-            return number
-        default:
-            return nil
         }
+        if let street = street {
+            return street
+        }
+        return number
     }
 
     private static func firstNonEmpty(_ values: String?...) -> String? {
