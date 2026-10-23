@@ -11,11 +11,23 @@ enum HTTP {
         return request
     }
 
+    /// A request for a browser-facing page such as a Google Maps share link.
+    static func htmlRequest(url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 25
+        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        request.setValue(
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            forHTTPHeaderField: "Accept"
+        )
+        request.setValue("en", forHTTPHeaderField: "Accept-Language")
+        return request
+    }
+
     static func data(
         for request: URLRequest,
         session: URLSession = .shared
-    ) async throws -> Data {
-        do {
+    ) async throws -> Data {        do {
             let (data, response) = try await session.data(for: request)
             guard let http = response as? HTTPURLResponse else {
                 throw APIError.transport("No HTTP response was received.")

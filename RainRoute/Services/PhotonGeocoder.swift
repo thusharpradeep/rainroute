@@ -12,7 +12,11 @@ struct Place: Identifiable, Hashable, Sendable {
     }
 }
 
-struct PhotonGeocoder: Sendable {
+protocol PlaceSearching {
+    func search(_ query: String) async throws -> [Place]
+}
+
+struct PhotonGeocoder: Sendable, PlaceSearching {
     var baseURL: URL = URL(string: "https://photon.komoot.io/api/")!
     var session: URLSession = .shared
 
