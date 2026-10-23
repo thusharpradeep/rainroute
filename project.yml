@@ -10,8 +10,8 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-    MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "2"
     CODE_SIGN_STYLE: Automatic
     SWIFT_STRICT_CONCURRENCY: minimal
 
@@ -28,11 +28,15 @@ targets:
       path: RainRoute/Info.plist
       properties:
         CFBundleDisplayName: RainRoute
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIColorName: LaunchBackground
         UIApplicationSupportsIndirectInputEvents: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        NSLocationWhenInUseUsageDescription: "RainRoute uses your location only while you ride to show progress and keep the remaining-route rain forecast up to date."
+        LSApplicationQueriesSchemes:
+          - comgooglemaps
         NSHumanReadableCopyright: "RainRoute. Weather by Open-Meteo. Maps and routing data by OpenStreetMap contributors."
     settings:
       base:

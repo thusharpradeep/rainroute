@@ -86,9 +86,11 @@ Free signing typically expires after 7 days. Symptoms: the app icon remains but 
 | Apple ID sign-in fails | Check the password and two-factor prompt, or try a different free Apple ID. Too many active sideloaded apps can also block installation. |
 | Certificate expired | Re-sign the IPA with iloader. The app will not launch until it is signed again. |
 | Weather or route errors in the app | Check the phone's internet connection. The free Photon, OSRM, and Open-Meteo services can occasionally rate-limit; wait a moment and tap Check again. |
+| Location prompt does not appear on Start ride | Check **Settings → Privacy & Security → Location Services** and make sure RainRoute is allowed. Denying location disables live ride only; route checks, Google Maps import, and map hand-off still work. |
 
 ## Notes
 
-- RainRoute makes no network requests to a RainRoute server. It talks directly to Photon, OSRM, and Open-Meteo.
+- RainRoute asks for location only when you start a live ride. The permission is **When In Use**; live tracking stops when the app leaves the foreground.
+- RainRoute makes no network requests to a RainRoute server. It talks directly to Photon, OSRM, and Open-Meteo. Google Maps links are resolved through Google's public link redirect.
 - The IPA in GitHub Actions is intentionally unsigned. Never enter your Apple ID into a random website that offers to sign it for you.
 - RainRoute is a planning aid. Do not use it as a substitute for your own judgment about road and weather safety.

@@ -1,7 +1,7 @@
 import Foundation
 
 enum HTTP {
-    static let userAgent = "RainRoute/1.0 (iOS; +https://github.com/thusharpradeep/rainroute)"
+    static let userAgent = "RainRoute/1.1 (iOS; +https://github.com/thusharpradeep/rainroute)"
 
     static func request(url: URL) -> URLRequest {
         var request = URLRequest(url: url)
