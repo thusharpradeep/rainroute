@@ -1,0 +1,21 @@
+# macOS / Xcode
+.DS_Store
+DerivedData/
+build/
+build-tests/
+build-device/
+artifacts/
+Payload/
+*.ipa
+*.dSYM
+*.xcresult
+*.xcuserstate
+xcuserdata/
+RainRoute.xcodeproj/
+RainRoute/Info.plist
+
+# Local tooling
+.idea/
+.vscode/
+__pycache__/
+*.pyc

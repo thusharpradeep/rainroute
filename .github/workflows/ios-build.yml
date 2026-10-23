@@ -1,0 +1,101 @@
+name: Build RainRoute
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "RainRoute/**"
+      - "RainRouteTests/**"
+      - "project.yml"
+      - ".github/workflows/ios-build.yml"
+  pull_request:
+    paths:
+      - "RainRoute/**"
+      - "RainRouteTests/**"
+      - "project.yml"
+      - ".github/workflows/ios-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rainroute-ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Tests + unsigned IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    env:
+      SCHEME: RainRoute
+      BUNDLE_ID: com.thusharpradeep.rainroute
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+
+      - name: Run unit tests
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project RainRoute.xcodeproj \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro Max,OS=latest" \
+            -derivedDataPath build-tests \
+            -only-testing:RainRouteTests \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rainroute-test-results
+          path: build-tests/Logs/Test/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Build unsigned device app
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project RainRoute.xcodeproj \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build-device \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/Payload
+          cp -R build-device/Build/Products/Release-iphoneos/RainRoute.app artifacts/Payload/
+          cd artifacts
+          zip -qry RainRoute-unsigned.ipa Payload
+          ls -lh RainRoute-unsigned.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: rainroute-ipa
+          path: artifacts/RainRoute-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
