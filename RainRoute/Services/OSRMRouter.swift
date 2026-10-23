@@ -5,32 +5,56 @@ struct OSRMRouter: Sendable {
     var session: URLSession = .shared
 
     func route(from start: GeoCoordinate, to end: GeoCoordinate) async throws -> Route {
+        try await route(through: [start, end])
+    }
+
+    /// Routes through an ordered list of anchors. Google Maps imports use this
+    /// to keep the rider's start, stops, and destination in that order.
+    func route(through coordinates: [GeoCoordinate]) async throws -> Route {
+        guard coordinates.count >= 2 else {
+            throw APIError.service("A route needs at least two points.")
+        }
+
         do {
-            return try await fetchRoute(from: start, to: end, annotations: true)
+            return try await fetchRoute(through: coordinates, annotations: true)
         } catch let error as APIError {
             if case .http(let status, _) = error, status == 400 {
                 // The public server may reject annotations; the route is still usable
                 // with a constant-speed timing profile.
-                return try await fetchRoute(from: start, to: end, annotations: false)
+                return try await fetchRoute(through: coordinates, annotations: false)
             }
             throw error
         }
     }
 
-    private func fetchRoute(
-        from start: GeoCoordinate,
-        to end: GeoCoordinate,
+    static func routeURL(
+        baseURL: URL,
+        coordinates: [GeoCoordinate],
         annotations: Bool
-    ) async throws -> Route {
-        let startCoordinate = "\(start.longitude),\(start.latitude)"
-        let endCoordinate = "\(end.longitude),\(end.latitude)"
+    ) -> URL? {
+        guard coordinates.count >= 2 else { return nil }
+
+        let anchors = coordinates
+            .map { "\($0.longitude),\($0.latitude)" }
+            .joined(separator: ";")
         var urlString = baseURL.absoluteString
-            + "/route/v1/driving/\(startCoordinate);\(endCoordinate)"
+            + "/route/v1/driving/\(anchors)"
             + "?overview=full&geometries=geojson&steps=true&alternatives=false"
         if annotations {
             urlString += "&annotations=duration,distance"
         }
-        guard let url = URL(string: urlString) else {
+        return URL(string: urlString)
+    }
+
+    private func fetchRoute(
+        through coordinates: [GeoCoordinate],
+        annotations: Bool
+    ) async throws -> Route {
+        guard let url = Self.routeURL(
+            baseURL: baseURL,
+            coordinates: coordinates,
+            annotations: annotations
+        ) else {
             throw APIError.invalidURL
         }
 
@@ -94,11 +118,24 @@ struct OSRMRouter: Sendable {
         route: OSRMRoute,
         coordinates: [GeoCoordinate]
     ) -> Route? {
-        guard route.legs?.count == 1,
-              let annotation = route.legs?.first?.annotation,
-              let distances = annotation.distance,
-              let durations = annotation.duration,
-              distances.count == coordinates.count - 1,
+        guard let legs = route.legs, !legs.isEmpty else {
+            return nil
+        }
+
+        var distances: [Double] = []
+        var durations: [Double] = []
+        for leg in legs {
+            guard let annotation = leg.annotation,
+                  let legDistances = annotation.distance,
+                  let legDurations = annotation.duration,
+                  legDistances.count == legDurations.count else {
+                return nil
+            }
+            distances.append(contentsOf: legDistances)
+            durations.append(contentsOf: legDurations)
+        }
+
+        guard distances.count == coordinates.count - 1,
               durations.count == coordinates.count - 1 else {
             return nil
         }
