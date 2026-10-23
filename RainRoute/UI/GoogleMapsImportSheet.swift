@@ -161,6 +161,7 @@ struct GoogleMapsImportSheet: View {
 
     private var canImport: Bool {
         !model.isImporting
+            && !model.isLoading
             && !link.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 

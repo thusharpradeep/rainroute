@@ -59,9 +59,7 @@ struct WetnessSummaryCard: View {
                     InlineMetric(
                         icon: "arrow.up.right",
                         label: isLive ? "Now" : "Leave",
-                        value: isLive
-                            ? Date().formatted(.dateTime.hour().minute())
-                            : result.departure.formatted(.dateTime.hour().minute())
+                        value: result.departure.formatted(.dateTime.hour().minute())
                     )
                     InlineMetric(
                         icon: "arrow.down.left",

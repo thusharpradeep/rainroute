@@ -30,6 +30,7 @@ struct OpenMeteoWeatherService: WeatherForecastProviding {
             URLQueryItem(name: "longitude", value: longitudes),
             URLQueryItem(name: "hourly", value: "precipitation,precipitation_probability"),
             URLQueryItem(name: "forecast_days", value: "3"),
+            URLQueryItem(name: "past_days", value: "1"),
             URLQueryItem(name: "timezone", value: "GMT"),
             URLQueryItem(name: "timeformat", value: "unixtime")
         ]

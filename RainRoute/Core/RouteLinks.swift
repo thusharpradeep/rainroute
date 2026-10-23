@@ -7,10 +7,6 @@ enum RouteLinks {
         waypoints: [GeoCoordinate] = []
     ) -> URL {
         var components = URLComponents()
-        components.scheme = "https"
-        components.host = "www.google.com"
-        components.path = "/maps/dir/"
-
         var items = [
             URLQueryItem(name: "api", value: "1"),
             URLQueryItem(name: "origin", value: coordinateString(start)),
@@ -27,8 +23,11 @@ enum RouteLinks {
         items.append(URLQueryItem(name: "travelmode", value: "driving"))
         components.queryItems = items
 
-        return components.url
-            ?? URL(string: "https://www.google.com/maps/dir/")!
+        guard let query = components.percentEncodedQuery,
+              let url = URL(string: "https://www.google.com/maps/dir/?\(query)") else {
+            return URL(string: "https://www.google.com/maps/dir/")!
+        }
+        return url
     }
 
     /// The installed Google Maps app's documented directions URL.

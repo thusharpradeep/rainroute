@@ -50,7 +50,9 @@ struct LiveRideCard: View {
 
                     HStack(spacing: 8) {
                         Label(
-                            "GPS ±\(Int(snapshot.accuracyMeters.rounded())) m",
+                            model.isWaitingForGPS
+                                ? "GPS accuracy pending"
+                                : "GPS ±\(Int(snapshot.accuracyMeters.rounded())) m",
                             systemImage: "location.circle"
                         )
                         Spacer(minLength: 0)
@@ -58,7 +60,9 @@ struct LiveRideCard: View {
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                } else if model.isWaitingForGPS {
+                }
+
+                if model.isWaitingForGPS {
                     HStack(spacing: 8) {
                         ProgressView()
                             .controlSize(.small)

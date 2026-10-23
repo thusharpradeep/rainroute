@@ -573,7 +573,7 @@ final class AppModel: ObservableObject {
                 route: route
             )
 
-            if progress.distanceMeters >= route.totalDistanceMeters - 120 {
+            if RouteProgressTracker.hasArrived(progress, route: route) {
                 hasArrived = true
                 return
             }
