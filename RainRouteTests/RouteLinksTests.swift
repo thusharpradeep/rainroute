@@ -15,7 +15,12 @@ final class RouteLinksTests: XCTestCase {
         )
 
         XCTAssertEqual(url.host, "www.google.com")
-        XCTAssertEqual(url.path, "/maps/dir/")
+        // URL.path strips a trailing slash on Darwin, so assert the built
+        // string keeps Google's documented /maps/dir/? form.
+        XCTAssertTrue(
+            url.absoluteString.hasPrefix("https://www.google.com/maps/dir/?"),
+            url.absoluteString
+        )
 
         let items = try XCTUnwrap(
             URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems
